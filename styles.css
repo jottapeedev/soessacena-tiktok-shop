@@ -890,3 +890,17 @@ input,select,textarea{font-family:inherit;color:inherit}
 .lista-item{display:flex;gap:7px;align-items:center}
 .lista-item .input{flex:1;padding:7px 11px;font-size:13px}
 .lista-item .icon-btn{flex:none}
+
+/* ============================================================
+   REMOVER PRODUTO — diálogo Arquivar × Excluir definitivamente
+   ============================================================ */
+.rm-opcoes{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.rm-op{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:12px;padding:13px 14px;cursor:pointer;
+  transition:.15s;color:var(--text)}
+.rm-op:hover{border-color:rgba(37,244,238,.55);background:var(--surface-3)}
+.rm-op.danger:hover{border-color:rgba(254,44,85,.6)}
+.rm-op-ic{font-size:18px;line-height:1.25}
+.rm-op b{display:block;font-size:13.5px;font-weight:700;margin-bottom:3px}
+.rm-op small{display:block;font-size:12px;color:var(--text-3);line-height:1.5}
+.rm-op small b{color:var(--rosa);display:inline}

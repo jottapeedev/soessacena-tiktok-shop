@@ -973,7 +973,7 @@ function renderEsteira() {
         '<td class="num"><b>' + fmtMoeda(p.comissaoTotal) + '</b></td>' +
         '<td class="td-actions">' +
           '<button class="icon-btn" data-act="edit-product" data-id="' + esc(p.id) + '" title="Editar">' + ICONS.edit + '</button>' +
-          '<button class="icon-btn" data-act="archive-product" data-id="' + esc(p.id) + '" title="Arquivar">' + ICONS.trash + '</button>' +
+          '<button class="icon-btn" data-act="archive-product" data-id="' + esc(p.id) + '" title="Arquivar ou excluir">' + ICONS.trash + '</button>' +
         '</td></tr>';
     }).join('');
   } else {
@@ -1114,7 +1114,7 @@ function renderCadastro() {
       '<td><span class="td-sub">' + fmtData(p.dataCadastro) + '</span></td>' +
       '<td class="td-actions">' +
         '<button class="icon-btn" data-act="edit-product" data-id="' + esc(p.id) + '" title="Editar">' + ICONS.edit + '</button>' +
-        '<button class="icon-btn" data-act="archive-product" data-id="' + esc(p.id) + '" title="Arquivar">' + ICONS.trash + '</button>' +
+        '<button class="icon-btn" data-act="archive-product" data-id="' + esc(p.id) + '" title="Arquivar ou excluir">' + ICONS.trash + '</button>' +
       '</td></tr>';
   }).join('');
 }
@@ -1525,14 +1525,37 @@ function flashRow_(id) {
 function arquivarProduto_(id) {
   var p = (state.data.produtos || []).filter(function(x) { return x.id === id; })[0];
   if (!p) return;
-  confirmar('Arquivar <b>"' + esc(p.produto) + '"</b>?<br><small style="color:var(--text-3)">Ele sai da esteira como Descartado, mas o registro permanece para auditoria. Nada é apagado.</small>',
-    'Arquivar', function() {
-      API.rpc('remove_product', id).then(function(r) {
-        if (!r.ok) throw new Error(r.message);
-        toast(r.message, 'success');
-        carregarTudo_(false);
-      }).catch(function(e) { toast(e.message, 'error'); });
-    }, true);
+  var nCont = (state.data.conteudos || []).filter(function(c) { return c.produtoId === id; }).length;
+  openModal(
+    '<p class="confirm-txt">O que deseja fazer com <b>"' + esc(p.produto) + '"</b>?</p>' +
+    '<div class="rm-opcoes">' +
+      '<button class="rm-op" id="rm-arquivar"><span class="rm-op-ic">🗂️</span><span><b>Arquivar</b>' +
+        '<small>O produto vai para a coluna ❌ Descartados. O registro e o histórico permanecem para auditoria.</small></span></button>' +
+      '<button class="rm-op danger" id="rm-excluir"><span class="rm-op-ic">🗑️</span><span><b>Excluir definitivamente</b>' +
+        '<small>' + (nCont ? 'Apaga o produto e <b>' + nCont + ' conteúdo(s)</b> vinculado(s). ' : 'Apaga o produto. ') +
+        'Essa ação é permanente — não dá para desfazer.</small></span></button>' +
+    '</div>',
+    {
+      title: 'Remover produto',
+      foot: '<button class="btn btn-ghost" data-close>Cancelar</button>'
+    }
+  );
+  $('#rm-arquivar').addEventListener('click', function() {
+    API.rpc('remove_product', id).then(function(r) {
+      if (!r.ok) throw new Error(r.message);
+      toast(r.message, 'success');
+      closeModal();
+      carregarTudo_(false);
+    }).catch(function(e) { toast(e.message, 'error'); });
+  });
+  $('#rm-excluir').addEventListener('click', function() {
+    API.rpc('delete_product', id).then(function(r) {
+      if (!r.ok) throw new Error(r.message);
+      toast(r.message, 'success');
+      closeModal();
+      carregarTudo_(false);
+    }).catch(function(e) { toast(e.message, 'error'); });
+  });
 }
 
 /* ============================================================

@@ -159,6 +159,7 @@ var LOCALDB = {
       case 'update_product_status': res = this._updateStatus(args.p_id, args.p_status); break;
       case 'move_product_column': res = this._moveColumn(args.p_id, args.p_coluna); break;
       case 'remove_product': res = this._removeProduct(args); break;
+      case 'delete_product': res = this._deleteProduct(args); break;
       case 'save_content': res = this._saveContent(args); break;
       case 'remove_content': res = this._removeContent(args); break;
       case 'save_corte': res = this._saveCorte(args); break;
@@ -260,6 +261,18 @@ var LOCALDB = {
     p.status = '❌ Descartado'; p.classificacao = '⚫ DESCARTADO'; p.atualizadoEm = this._ts();
     this._log('ARCHIVE', 'Produto', id, 'Produto arquivado (descartado).');
     return { ok: true, message: 'Produto arquivado. O registro permanece para auditoria.' };
+  },
+  _deleteProduct: function(id) {
+    var i = -1, p = null;
+    this.state.produtos.forEach(function(x, k) { if (x.id === id) { p = x; i = k; } });
+    if (!p) return { ok: false, message: 'Produto não encontrado.' };
+    var antes = this.state.conteudos.length;
+    this.state.conteudos = this.state.conteudos.filter(function(c) { return c.produtoId !== id; });
+    var nCont = antes - this.state.conteudos.length;
+    this.state.produtos.splice(i, 1);
+    this._log('DELETE', 'Produto', id, 'Produto excluído definitivamente: ' + p.produto +
+      (nCont ? ' (' + nCont + ' conteúdo(s) vinculado(s) removido(s))' : ''));
+    return { ok: true, message: 'Produto excluído definitivamente.' };
   },
 
   /* ---------- save_content ---------- */
